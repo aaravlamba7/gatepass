@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS sessions (
+  id CHAR(32) NOT NULL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  admin_key_hash CHAR(64) NOT NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  session_id CHAR(32) NOT NULL,
+  student_name VARCHAR(100) NOT NULL,
+  roll_number VARCHAR(30) NOT NULL,
+  signed_in_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY one_sign_in_per_roll (session_id, roll_number),
+  CONSTRAINT attendance_session_fk FOREIGN KEY (session_id)
+    REFERENCES sessions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
