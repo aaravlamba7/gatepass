@@ -1,18 +1,20 @@
-CREATE TABLE IF NOT EXISTS sessions (
-  id CHAR(32) NOT NULL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  admin_key_hash CHAR(64) NOT NULL,
-  active TINYINT(1) NOT NULL DEFAULT 1,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE students (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    roll_number VARCHAR(40) NOT NULL UNIQUE,
+    qr_token CHAR(36) NOT NULL UNIQUE,
+    gate_status ENUM('OUT', 'IN') NOT NULL DEFAULT 'OUT'
+);
 
-CREATE TABLE IF NOT EXISTS attendance (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  session_id CHAR(32) NOT NULL,
-  student_name VARCHAR(100) NOT NULL,
-  roll_number VARCHAR(30) NOT NULL,
-  signed_in_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY one_sign_in_per_roll (session_id, roll_number),
-  CONSTRAINT attendance_session_fk FOREIGN KEY (session_id)
-    REFERENCES sessions(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE gate_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id INT UNSIGNED NOT NULL,
+    movement ENUM('ENTRY', 'EXIT') NOT NULL,
+    gate_name VARCHAR(60) NOT NULL DEFAULT 'Main Gate',
+    scanned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_gate_logs_student FOREIGN KEY (student_id) REFERENCES students(id)
+);
+
+INSERT INTO students (name, roll_number, qr_token) VALUES
+('Demo Student One', 'DEMO/2026/001', 'a347f1c0-9c21-4e16-b836-121c92ce00a1'),
+('Demo Student Two', 'DEMO/2026/002', 'c2b85a6e-1843-4d91-8e30-f93d1e2a007b');

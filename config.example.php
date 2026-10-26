@@ -1,9 +1,9 @@
 <?php
-// Copy this file to config.php and replace these values with the details
-// shown in your InfinityFree Control Panel under MySQL Databases.
+// Copy this file to config.php and enter the database details from your host.
 return [
-    'host' => 'YOUR_MYSQL_HOST',
-    'database' => 'YOUR_DATABASE_NAME',
-    'username' => 'YOUR_DATABASE_USERNAME',
-    'password' => 'YOUR_DATABASE_PASSWORD',
+    'db_host' => 'localhost',
+    'db_name' => 'YOUR_DATABASE_NAME',
+    'db_user' => 'YOUR_DATABASE_USER',
+    'db_pass' => 'YOUR_DATABASE_PASSWORD',
+    'guard_pin' => '2468', // Change this before publishing.
 ];
