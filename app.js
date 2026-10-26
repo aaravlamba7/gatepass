@@ -5,12 +5,12 @@ const students = [
 
 const defaultStatus = Object.fromEntries(students.map((student) => [student.token, "OUT"]));
 let statuses = JSON.parse(localStorage.getItem("campusPassStatus") || "null") || { ...defaultStatus };
-let history = JSON.parse(localStorage.getItem("campusPassHistory") || "[]");
+let scanHistory = JSON.parse(localStorage.getItem("campusPassHistory") || "[]");
 let selectedStudent = null;
 
 function saveDemo() {
   localStorage.setItem("campusPassStatus", JSON.stringify(statuses));
-  localStorage.setItem("campusPassHistory", JSON.stringify(history));
+  localStorage.setItem("campusPassHistory", JSON.stringify(scanHistory));
 }
 
 function renderPasses() {
@@ -33,12 +33,13 @@ function showMessage(text, kind = "info") {
 
 function renderHistory() {
   const target = document.querySelector("#scan-history");
-  if (!history.length) { target.innerHTML = '<p class="muted">No scans recorded in this browser yet.</p>'; return; }
-  target.innerHTML = `<ul class="history-list">${history.slice(0, 6).map((item) => `<li><span><strong>${item.name}</strong><small>${item.roll} · ${item.time}</small></span><b>${item.movement}</b></li>`).join("")}</ul>`;
+  if (!scanHistory.length) { target.innerHTML = '<p class="muted">No scans recorded in this browser yet.</p>'; return; }
+  target.innerHTML = `<ul class="history-list">${scanHistory.slice(0, 6).map((item) => `<li><span><strong>${item.name}</strong><small>${item.roll} · ${item.time}</small></span><b>${item.movement}</b></li>`).join("")}</ul>`;
 }
 
 function findStudent(token) {
-  try { token = new URL(token).searchParams.get("scan") || token; } catch (_) { /* USB scanners may send the plain token. */ }
+  const scanMatch = token.match(/[?&]scan=([^&#]+)/);
+  if (scanMatch) token = decodeURIComponent(scanMatch[1]);
   selectedStudent = students.find((student) => student.token === token) || null;
   const result = document.querySelector("#student-result");
   if (!selectedStudent) { result.classList.add("hidden"); showMessage("QR token not found. Scan a sample pass and try again.", "error"); return; }
@@ -70,7 +71,7 @@ document.querySelector("#confirm-form").addEventListener("submit", (event) => {
   const required = movement === "ENTRY" ? "OUT" : "IN";
   if (statuses[selectedStudent.token] !== required) { showMessage(movement === "ENTRY" ? "This student is already marked inside." : "Record an entry before recording an exit.", "error"); return; }
   statuses[selectedStudent.token] = movement === "ENTRY" ? "IN" : "OUT";
-  history.unshift({ name: selectedStudent.name, roll: selectedStudent.roll, movement, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
+  scanHistory.unshift({ name: selectedStudent.name, roll: selectedStudent.roll, movement, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
   saveDemo();
   document.querySelector("#result-status").textContent = statuses[selectedStudent.token];
   showMessage(`${selectedStudent.name}: ${movement} recorded. New status: ${statuses[selectedStudent.token]}.`, "success");
@@ -78,7 +79,7 @@ document.querySelector("#confirm-form").addEventListener("submit", (event) => {
 });
 
 document.querySelector("#reset-demo").addEventListener("click", () => {
-  statuses = { ...defaultStatus }; history = []; saveDemo(); renderHistory(); renderPasses();
+  statuses = { ...defaultStatus }; scanHistory = []; saveDemo(); renderHistory(); renderPasses();
   document.querySelector("#student-result").classList.add("hidden"); showMessage("Demo scans have been cleared.", "success");
 });
 
@@ -91,5 +92,5 @@ if (scannedToken) {
   document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.pageLink === "guard"));
   document.querySelector("#qr-token").value = scannedToken;
   document.querySelector("#scan-form").requestSubmit();
-  history.replaceState({}, "", `${window.location.pathname}#guard`);
+  window.history.replaceState({}, "", `${window.location.pathname}#guard`);
 }
