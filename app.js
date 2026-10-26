@@ -1,7 +1,15 @@
 // Add students here. Each student needs a unique roll, passCode, and QR token.
 const students = [
-  { name: "Demo Student One", roll: "DEMO/2026/001", passCode: "1111", token: "CAMPUS-DEMO-001" },
-  { name: "Demo Student Two", roll: "DEMO/2026/002", passCode: "2222", token: "CAMPUS-DEMO-002" }
+  { name: "Demo Student 01", roll: "DEMO/2026/001", passCode: "1001", token: "CAMPUS-DEMO-001" },
+  { name: "Demo Student 02", roll: "DEMO/2026/002", passCode: "1002", token: "CAMPUS-DEMO-002" },
+  { name: "Demo Student 03", roll: "DEMO/2026/003", passCode: "1003", token: "CAMPUS-DEMO-003" },
+  { name: "Demo Student 04", roll: "DEMO/2026/004", passCode: "1004", token: "CAMPUS-DEMO-004" },
+  { name: "Demo Student 05", roll: "DEMO/2026/005", passCode: "1005", token: "CAMPUS-DEMO-005" },
+  { name: "Demo Student 06", roll: "DEMO/2026/006", passCode: "1006", token: "CAMPUS-DEMO-006" },
+  { name: "Demo Student 07", roll: "DEMO/2026/007", passCode: "1007", token: "CAMPUS-DEMO-007" },
+  { name: "Demo Student 08", roll: "DEMO/2026/008", passCode: "1008", token: "CAMPUS-DEMO-008" },
+  { name: "Demo Student 09", roll: "DEMO/2026/009", passCode: "1009", token: "CAMPUS-DEMO-009" },
+  { name: "Demo Student 10", roll: "DEMO/2026/010", passCode: "1010", token: "CAMPUS-DEMO-010" }
 ];
 
 // Demo-only: a code in a public JavaScript file is not secure authentication.
@@ -46,6 +54,12 @@ window.addEventListener("focus", refreshDemoState);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) refreshDemoState();
 });
+window.setInterval(() => {
+  if (!signedInStudent) return;
+  const currentStatus = readStatuses()[signedInStudent.token] || "OUT";
+  const statusLabel = document.getElementById("student-status");
+  if (statusLabel && statusLabel.textContent !== currentStatus) statusLabel.textContent = currentStatus;
+}, 1500);
 
 function saveDemo() {
   localStorage.setItem("campusPassStatus", JSON.stringify(statuses));

@@ -11,8 +11,7 @@ The site has separate student and guard pages. A student signs in with their rol
 
 ## Demo sign-ins
 
-- Demo Student One: roll `DEMO/2026/001`, pass code `1111`
-- Demo Student Two: roll `DEMO/2026/002`, pass code `2222`
+Ten demo students are included. Their rolls run from `DEMO/2026/001` through `DEMO/2026/010`; their pass codes run from `1001` through `1010` in the same order. The guard PIN is `2468`.
 - Guard PIN: `2468`
 
 To add students, add another object to the `students` list near the top of `app.js`. Give each student a unique name, roll number, pass code, and QR token.
