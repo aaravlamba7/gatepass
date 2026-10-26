@@ -6,14 +6,14 @@
   <title>Student Pass | Campus Gate Pass</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-  <script src="backend-config.js?v=shared-1" defer></script>
-  <script src="app.js?v=shared-1" defer></script>
+  <script src="backend-config.js?v=shared-2" defer></script>
+  <script src="app.js?v=shared-2" defer></script>
 </head>
 <body>
   <header class="site-header"><a class="brand" href="index.html"><span class="brand-icon">G</span> Campus Gate Pass</a><nav><a class="nav-link active" href="index.html">Student</a></nav></header>
   <main class="container narrow">
     <section class="intro"><p class="small-heading">STUDENT PORTAL</p><h1>Student pass</h1><p>Sign in with your roll number and pass code to view your own QR pass.</p></section>
-    <div class="demo-note"><strong>Shared backend:</strong> Status comes from the shared database and can update across devices. Complete the steps in <code>BACKEND_SETUP.md</code> before use.</div>
+    <div class="demo-note"><strong>Shared backend:</strong> Student status comes from the shared database and updates after the guard records a scan.</div>
     <section id="student-login" class="panel login-panel">
       <h2>Student sign-in</h2>
       <form id="student-login-form">
