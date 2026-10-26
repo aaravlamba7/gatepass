@@ -21,4 +21,4 @@ QRCode.js loads from a CDN, so QR images need an internet connection. A phone ca
 
 ## Important limit
 
-This is still a static classroom demo. The PINs and student pass codes are visible in the public JavaScript file, so they do not provide real security. Scan records are stored in this browser only and do not sync between devices. Real separation requires server-side authentication and a shared database; HTML/CSS/JavaScript alone cannot enforce it.
+This is still a static classroom demo. The PINs and student pass codes are visible in the public JavaScript file, so they do not provide real security. Scan records are stored in this browser. The student page refreshes when the guard changes a record in another tab of the same browser, but records do not sync between different devices. Real separation and cross-device status updates require server-side authentication and a shared database; static HTML/CSS/JavaScript alone cannot enforce them.

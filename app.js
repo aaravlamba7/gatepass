@@ -7,9 +7,45 @@ const students = [
 // Demo-only: a code in a public JavaScript file is not secure authentication.
 const guardPin = "2468";
 const defaultStatuses = Object.fromEntries(students.map((student) => [student.token, "OUT"]));
-let statuses = JSON.parse(localStorage.getItem("campusPassStatus") || "null") || { ...defaultStatuses };
-let scanHistory = JSON.parse(localStorage.getItem("campusPassHistory") || "[]");
+function readStatuses() {
+  try {
+    return { ...defaultStatuses, ...JSON.parse(localStorage.getItem("campusPassStatus") || "{}") };
+  } catch (error) {
+    return { ...defaultStatuses };
+  }
+}
+
+function readHistory() {
+  try {
+    return JSON.parse(localStorage.getItem("campusPassHistory") || "[]");
+  } catch (error) {
+    return [];
+  }
+}
+
+let statuses = readStatuses();
+let scanHistory = readHistory();
 let selectedStudent = null;
+let signedInStudent = null;
+
+function refreshDemoState() {
+  statuses = readStatuses();
+  scanHistory = readHistory();
+  const studentStatus = document.getElementById("student-status");
+  if (studentStatus && signedInStudent) studentStatus.textContent = statuses[signedInStudent.token] || "OUT";
+  const guardStatus = document.getElementById("result-status");
+  if (guardStatus && selectedStudent) guardStatus.textContent = statuses[selectedStudent.token] || "OUT";
+  renderHistory();
+}
+
+// Keep the student pass and guard desk in sync across tabs of this same browser.
+window.addEventListener("storage", (event) => {
+  if (event.key === "campusPassStatus" || event.key === "campusPassHistory") refreshDemoState();
+});
+window.addEventListener("focus", refreshDemoState);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshDemoState();
+});
 
 function saveDemo() {
   localStorage.setItem("campusPassStatus", JSON.stringify(statuses));
@@ -31,11 +67,13 @@ function studentSignIn() {
   if (!form) return;
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    refreshDemoState();
     const roll = document.getElementById("student-roll").value.trim().toLowerCase();
     const code = document.getElementById("student-code").value.trim();
     const student = students.find((item) => item.roll.toLowerCase() === roll && item.passCode === code);
     if (!student) { showMessage("student-message", "Roll number or pass code is incorrect.", "error"); return; }
     hideMessage("student-message");
+    signedInStudent = student;
     document.getElementById("student-login").classList.add("hidden");
     document.getElementById("student-pass").classList.remove("hidden");
     document.getElementById("student-name").textContent = student.name;
@@ -47,6 +85,7 @@ function studentSignIn() {
     if (window.QRCode) new QRCode(document.getElementById("student-qr"), { text: guardLink.href, width: 148, height: 148, colorDark: "#1d3551", colorLight: "#ffffff" });
   });
   document.getElementById("student-logout").addEventListener("click", () => {
+    signedInStudent = null;
     document.getElementById("student-pass").classList.add("hidden");
     document.getElementById("student-login").classList.remove("hidden");
     form.reset();
@@ -63,6 +102,7 @@ function renderHistory() {
 }
 
 function findStudent(rawValue) {
+  refreshDemoState();
   let token = rawValue.trim();
   const scanMatch = token.match(/[?&]scan=([^&#]+)/);
   if (scanMatch) token = decodeURIComponent(scanMatch[1]);
@@ -113,6 +153,7 @@ function guardSignIn() {
   });
   document.getElementById("confirm-form").addEventListener("submit", (event) => {
     event.preventDefault();
+    refreshDemoState();
     if (!selectedStudent) return;
     const movement = document.getElementById("movement").value;
     const requiredStatus = movement === "ENTRY" ? "OUT" : "IN";
@@ -129,6 +170,7 @@ function guardSignIn() {
   });
   document.getElementById("reset-demo").addEventListener("click", () => {
     statuses = { ...defaultStatuses }; scanHistory = []; saveDemo(); renderHistory();
+    refreshDemoState();
     document.getElementById("student-result").classList.add("hidden");
     showMessage("scan-message", "Demo scans have been cleared.", "success");
   });
