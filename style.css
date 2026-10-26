@@ -6,6 +6,9 @@ body { margin: 0; background: #f5f7f9; color: var(--text); font: 16px/1.5 Arial,
 .brand-icon { width: 30px; height: 30px; display: grid; place-items: center; background: var(--navy); color: #fff; border-radius: 6px; }
 nav { display: flex; gap: 8px; } .nav-link { padding: 9px 12px; border-radius: 5px; color: var(--muted); text-decoration: none; } .nav-link.active, .nav-link:hover { color: var(--navy); background: var(--pale); }
 .container { width: min(930px, 90%); min-height: calc(100vh - 130px); margin: 38px auto 55px; }
+.container.narrow { width: min(650px, 90%); }
+.login-panel { max-width: 560px; }
+.role-note { margin-top: 18px; color: var(--muted); text-align: center; font-size: 13px; }
 .intro { max-width: 670px; margin-bottom: 22px; } .small-heading { margin: 0 0 6px; color: var(--blue); font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 h1, h2, p { margin-top: 0; } h1 { margin-bottom: 10px; color: var(--navy); font-size: clamp(28px, 4vw, 36px); line-height: 1.2; } h2 { margin-bottom: 6px; color: var(--navy); font-size: 20px; } .intro > p:last-child, .muted { color: var(--muted); }
 .demo-note, .message, .id-reminder { margin: 18px 0; padding: 12px 15px; border: 1px solid #d7e3ee; border-radius: 6px; background: #edf4fa; font-size: 14px; }
