@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guard Desk | Campus Gate Pass</title>
   <link rel="stylesheet" href="style.css">
-  <script src="app.js?v=roles-3" defer></script>
+  <script src="backend-config.js?v=shared-1" defer></script>
+  <script src="app.js?v=shared-1" defer></script>
 </head>
 <body>
   <header class="site-header"><span class="brand"><span class="brand-icon">G</span> Campus Gate Pass</span><nav><span class="nav-link active">Guard desk</span></nav></header>
   <main class="container narrow">
     <section class="intro"><p class="small-heading">MAIN GATE</p><h1>Guard desk</h1><p>Scan a student's pass, verify their physical college ID, and record entry or exit.</p></section>
-    <div class="demo-note"><strong>Classroom demo:</strong> The guard PIN is a demo check. A static website cannot securely hide data or enforce real account permissions.</div>
+    <div class="demo-note"><strong>Shared backend:</strong> Sign-in and scan permissions are checked by the database. Complete the steps in <code>BACKEND_SETUP.md</code> before use.</div>
     <section id="guard-login" class="panel login-panel">
       <h2>Guard sign-in</h2>
       <form id="guard-login-form"><label for="guard-pin">Guard PIN</label><input id="guard-pin" type="password" inputmode="numeric" placeholder="Enter guard PIN" required><button class="button" type="submit">Open guard desk</button></form>
@@ -26,7 +27,7 @@
       <section id="student-result" class="panel hidden"><p class="small-heading">MATCHED STUDENT</p><h2 id="result-name"></h2><p id="result-roll" class="muted"></p><p>Current status: <strong id="result-status"></strong></p><p class="id-reminder">Check the student's physical college ID before recording movement.</p>
         <form id="confirm-form"><label for="movement">Select movement</label><select id="movement" required><option value="">Choose entry or exit</option><option value="ENTRY">Entry — entering campus</option><option value="EXIT">Exit — leaving campus</option></select><label class="check-line"><input id="id-check" type="checkbox" required> I checked the physical college ID.</label><button class="button" type="submit">Record scan</button></form>
       </section>
-      <section class="panel history-panel"><div class="history-heading"><div><p class="small-heading">TODAY</p><h2>Recent scans</h2></div><button id="reset-demo" class="text-button" type="button">Reset demo</button></div><div id="scan-history"><p class="muted">No scans recorded in this browser yet.</p></div></section>
+      <section class="panel history-panel"><div class="history-heading"><div><p class="small-heading">RECENT ACTIVITY</p><h2>Recent scans</h2></div><span class="muted">Shared history</span></div><div id="scan-history"><p class="muted">No scans recorded yet.</p></div></section>
     </section>
   </main>
   <footer>Campus Gate Pass · Guard station demo</footer>
