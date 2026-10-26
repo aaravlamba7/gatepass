@@ -18,7 +18,11 @@ function renderPasses() {
   list.innerHTML = students.map((student) => `
     <article class="student-card"><div class="card-title-row"><div><p class="small-heading">STUDENT PASS</p><h2>${student.name}</h2><p class="roll-number">${student.roll}</p></div><span class="status ${statuses[student.token] === "IN" ? "inside" : "outside"}">${statuses[student.token]}</span></div>
       <div class="qr-frame"><div class="qr-code" data-token="${student.token}"></div></div><p class="pass-help">Show this QR and your college ID at the gate.</p></article>`).join("");
-  if (window.QRCode) document.querySelectorAll(".qr-code").forEach((box) => new QRCode(box, { text: box.dataset.token, width: 148, height: 148, colorDark: "#1d3551", colorLight: "#ffffff" }));
+  if (window.QRCode) document.querySelectorAll(".qr-code").forEach((box) => {
+    const passLink = new URL("./", window.location.href);
+    passLink.searchParams.set("scan", box.dataset.token);
+    new QRCode(box, { text: passLink.href, width: 148, height: 148, colorDark: "#1d3551", colorLight: "#ffffff" });
+  });
 }
 
 function showMessage(text, kind = "info") {
@@ -33,15 +37,7 @@ function renderHistory() {
   target.innerHTML = `<ul class="history-list">${history.slice(0, 6).map((item) => `<li><span><strong>${item.name}</strong><small>${item.roll} · ${item.time}</small></span><b>${item.movement}</b></li>`).join("")}</ul>`;
 }
 
-document.querySelectorAll("[data-page-link]").forEach((link) => link.addEventListener("click", () => {
-  const page = link.dataset.pageLink;
-  document.querySelectorAll(".page-section").forEach((section) => section.classList.toggle("hidden", section.id !== page));
-  document.querySelectorAll(".nav-link").forEach((item) => item.classList.toggle("active", item === link));
-}));
-
-document.querySelector("#scan-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const token = document.querySelector("#qr-token").value.trim();
+function findStudent(token) {
   selectedStudent = students.find((student) => student.token === token) || null;
   const result = document.querySelector("#student-result");
   if (!selectedStudent) { result.classList.add("hidden"); showMessage("QR token not found. Scan a sample pass and try again.", "error"); return; }
@@ -52,6 +48,18 @@ document.querySelector("#scan-form").addEventListener("submit", (event) => {
   document.querySelector("#id-check").checked = false;
   result.classList.remove("hidden");
   document.querySelector("#scan-message").className = "message hidden";
+}
+
+document.querySelectorAll("[data-page-link]").forEach((link) => link.addEventListener("click", () => {
+  const page = link.dataset.pageLink;
+  document.querySelectorAll(".page-section").forEach((section) => section.classList.toggle("hidden", section.id !== page));
+  document.querySelectorAll(".nav-link").forEach((item) => item.classList.toggle("active", item === link));
+}));
+
+document.querySelector("#scan-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const token = document.querySelector("#qr-token").value.trim();
+  findStudent(token);
 });
 
 document.querySelector("#confirm-form").addEventListener("submit", (event) => {
@@ -75,3 +83,12 @@ document.querySelector("#reset-demo").addEventListener("click", () => {
 
 renderPasses();
 renderHistory();
+
+const scannedToken = new URLSearchParams(window.location.search).get("scan");
+if (scannedToken) {
+  document.querySelectorAll(".page-section").forEach((section) => section.classList.toggle("hidden", section.id !== "guard"));
+  document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.pageLink === "guard"));
+  document.querySelector("#qr-token").value = scannedToken;
+  document.querySelector("#scan-form").requestSubmit();
+  history.replaceState({}, "", `${window.location.pathname}#guard`);
+}

@@ -8,7 +8,7 @@ This classroom prototype uses HTML, CSS, and a little JavaScript to show sample 
 - `style.css` controls layout, colours, and spacing.
 - `app.js` displays sample QR codes, checks entry/exit order, and saves scan history in this browser.
 
-QRCode.js loads from a CDN, so the QR images require an internet connection. A USB QR scanner types its token into the guard form like a keyboard.
+QRCode.js loads from a CDN, so the QR images require an internet connection. Each QR now links to this site with the student's token; scanning it with a phone camera opens the Guard desk with that student found. A USB QR scanner can also type a token into the guard form.
 
 Open `index.html` directly or publish these files with GitHub Pages or a static web host. No PHP, database, or build tools are needed.
 
