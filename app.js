@@ -38,6 +38,7 @@ function renderHistory() {
 }
 
 function findStudent(token) {
+  try { token = new URL(token).searchParams.get("scan") || token; } catch (_) { /* USB scanners may send the plain token. */ }
   selectedStudent = students.find((student) => student.token === token) || null;
   const result = document.querySelector("#student-result");
   if (!selectedStudent) { result.classList.add("hidden"); showMessage("QR token not found. Scan a sample pass and try again.", "error"); return; }
