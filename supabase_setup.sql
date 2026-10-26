@@ -40,6 +40,7 @@ create table if not exists public.gate_events (
 
 create index if not exists gate_events_scanned_at_idx on public.gate_events (scanned_at desc);
 create index if not exists gate_events_student_idx on public.gate_events (student_id, scanned_at desc);
+create unique index if not exists students_roll_normalized_idx on public.students (lower(btrim(roll_number)));
 
 -- Direct table access is denied. Browser clients may call only the checked functions below.
 alter table public.students enable row level security;
@@ -48,18 +49,8 @@ alter table public.app_sessions enable row level security;
 alter table public.gate_events enable row level security;
 revoke all on table public.students, public.guards, public.app_sessions, public.gate_events from public, anon, authenticated;
 
-insert into public.students (name, roll_number, pass_code_hash, qr_token) values
-  ('Demo Student 01', 'DEMO/2026/001', extensions.crypt('1001', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000001'),
-  ('Demo Student 02', 'DEMO/2026/002', extensions.crypt('1002', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000002'),
-  ('Demo Student 03', 'DEMO/2026/003', extensions.crypt('1003', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000003'),
-  ('Demo Student 04', 'DEMO/2026/004', extensions.crypt('1004', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000004'),
-  ('Demo Student 05', 'DEMO/2026/005', extensions.crypt('1005', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000005'),
-  ('Demo Student 06', 'DEMO/2026/006', extensions.crypt('1006', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000006'),
-  ('Demo Student 07', 'DEMO/2026/007', extensions.crypt('1007', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000007'),
-  ('Demo Student 08', 'DEMO/2026/008', extensions.crypt('1008', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000008'),
-  ('Demo Student 09', 'DEMO/2026/009', extensions.crypt('1009', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000009'),
-  ('Demo Student 10', 'DEMO/2026/010', extensions.crypt('1010', extensions.gen_salt('bf')), '9df75e85-2a2e-4ff0-baf1-000000000010')
-on conflict (roll_number) do nothing;
+-- Hide the old sample accounts in an existing database without deleting their records.
+update public.students set active = false where upper(roll_number) like 'DEMO/%';
 
 insert into public.guards (username, pin_hash)
 values ('Main Gate Guard', extensions.crypt('2468', extensions.gen_salt('bf')))
@@ -77,6 +68,37 @@ begin
   if extensions.crypt(coalesce(p_pass_code, ''), v_student.pass_code_hash) <> v_student.pass_code_hash then
     return jsonb_build_object('ok', false, 'error', 'Roll number or pass code is incorrect.');
   end if;
+  v_token := gen_random_uuid();
+  insert into public.app_sessions (token_hash, role, student_id)
+  values (encode(extensions.digest(v_token::text, 'sha256'), 'hex'), 'student', v_student.id);
+  return jsonb_build_object('ok', true, 'sessionToken', v_token, 'student', jsonb_build_object(
+    'name', v_student.name, 'roll', v_student.roll_number, 'status', v_student.current_status, 'qrToken', v_student.qr_token));
+end;
+$$;
+
+create or replace function public.student_register(p_name text, p_roll text, p_pass_code text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare v_student public.students%rowtype; v_token uuid; v_name text; v_roll text; v_pass_code text;
+begin
+  v_name := btrim(coalesce(p_name, ''));
+  v_roll := upper(btrim(coalesce(p_roll, '')));
+  v_pass_code := coalesce(p_pass_code, '');
+  if length(v_name) < 2 or length(v_name) > 100 then
+    return jsonb_build_object('ok', false, 'error', 'Enter a name between 2 and 100 characters.');
+  end if;
+  if length(v_roll) < 3 or length(v_roll) > 64 then
+    return jsonb_build_object('ok', false, 'error', 'Enter a valid college roll number.');
+  end if;
+  if length(v_pass_code) < 4 or length(v_pass_code) > 64 then
+    return jsonb_build_object('ok', false, 'error', 'Your pass code must be between 4 and 64 characters.');
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(lower(v_roll), 0));
+  if exists (select 1 from public.students where lower(btrim(roll_number)) = lower(v_roll)) then
+    return jsonb_build_object('ok', false, 'error', 'An account already exists for that roll number. Sign in instead.');
+  end if;
+  insert into public.students (name, roll_number, pass_code_hash, qr_token)
+  values (v_name, v_roll, extensions.crypt(v_pass_code, extensions.gen_salt('bf')), gen_random_uuid()::text)
+  returning * into v_student;
   v_token := gen_random_uuid();
   insert into public.app_sessions (token_hash, role, student_id)
   values (encode(extensions.digest(v_token::text, 'sha256'), 'hex'), 'student', v_student.id);
@@ -159,7 +181,7 @@ begin
   if not found then return jsonb_build_object('ok', false, 'error', 'Guard session expired. Sign in again.'); end if;
   select coalesce(jsonb_agg(jsonb_build_object('name', st.name, 'roll', st.roll_number, 'movement', ev.movement, 'scannedAt', ev.scanned_at) order by ev.scanned_at desc), '[]'::jsonb)
   into v_scans from (select * from public.gate_events order by scanned_at desc limit 20) ev
-  join public.students st on st.id = ev.student_id;
+  join public.students st on st.id = ev.student_id where st.active;
   return jsonb_build_object('ok', true, 'scans', v_scans);
 end;
 $$;
@@ -172,5 +194,5 @@ begin
 end;
 $$;
 
-revoke all on function public.student_login(text, text), public.guard_login(text), public.student_me(uuid), public.guard_lookup(uuid, text), public.guard_record_scan(uuid, text, text, boolean), public.guard_history(uuid), public.logout_session(uuid) from public, anon, authenticated;
-grant execute on function public.student_login(text, text), public.guard_login(text), public.student_me(uuid), public.guard_lookup(uuid, text), public.guard_record_scan(uuid, text, text, boolean), public.guard_history(uuid), public.logout_session(uuid) to anon, authenticated;
+revoke all on function public.student_login(text, text), public.student_register(text, text, text), public.guard_login(text), public.student_me(uuid), public.guard_lookup(uuid, text), public.guard_record_scan(uuid, text, text, boolean), public.guard_history(uuid), public.logout_session(uuid) from public, anon, authenticated;
+grant execute on function public.student_login(text, text), public.student_register(text, text, text), public.guard_login(text), public.student_me(uuid), public.guard_lookup(uuid, text), public.guard_record_scan(uuid, text, text, boolean), public.guard_history(uuid), public.logout_session(uuid) to anon, authenticated;

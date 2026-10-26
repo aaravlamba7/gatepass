@@ -1,22 +1,29 @@
-# Campus Gate Pass — shared-backend version
+# Campus Gate Pass
 
-The frontend is HTML/CSS/JavaScript hosted on GitHub Pages. Supabase Postgres provides the shared database and server-side functions, so student status and guard scans sync across devices. The project is connected to its Supabase backend; demo accounts are listed below.
+A student registers once with their name, college roll number, and a pass code they choose. Their account and QR pass are saved in Supabase for later sign-ins. The student page is hosted on GitHub Pages; guard scans and gate status use the shared database.
 
 ## Files
 
-- `index.html` is the student sign-in and QR pass page.
+- `index.html` contains student sign-in and one-time registration.
 - `guard.html` is the separate guard sign-in and scan page.
-- `app.js` calls the shared database functions and refreshes student status every three seconds.
-- `backend-config.js` holds only the public Supabase Project URL and publishable key.
-- `supabase_setup.sql` creates tables, restricted server-side functions, and ten sample students.
-- `BACKEND_SETUP.md` explains the backend design and adding students.
-- `style.css` controls layout and colours.
+- `app.js` connects page actions to the database and refreshes student status.
+- `backend-config.js` contains the public Supabase URL and publishable key.
+- `supabase_setup.sql` creates the tables and database functions. It does not add sample students.
+- `student_registration_migration.sql` updates an existing database with student registration and disables old sample accounts.
+- `BACKEND_SETUP.md` explains setup and account use.
+- `style.css` controls page layout and colours.
 
-## Demo sign-ins
+## Student use
 
-Rolls `DEMO/2026/001` through `DEMO/2026/010` use pass codes `1001` through `1010`, respectively. The guard PIN is `2468`.
+1. On the first visit, choose **Create a student account**.
+2. Enter your name and college roll number, then choose and confirm a pass code.
+3. Your QR pass opens. On later visits, sign in with the same roll number and pass code.
 
-QRCode.js loads from a CDN, so QR images need an internet connection. A phone camera scan opens `guard.html` with the student token. A USB scanner can type the QR link into the guard form.
+Each roll number can register only once. The account stores a protected pass-code hash, not the pass code itself.
 
-Do not put Supabase `service_role` or secret keys in the browser files. The QR token is stable for this classroom version, so the guard must check the physical college ID.
+## Guard use
+
+Open `guard.html`, sign in, scan the student's QR, check the physical college ID, and record Entry or Exit. The existing guard PIN is `2468`; change it before using this outside a classroom project.
+
+Do not put Supabase secret or service-role keys in browser files. Student names and roll numbers entered through registration are self-reported; this version does not check them against an official college roster.
 

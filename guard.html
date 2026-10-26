@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guard Desk | Campus Gate Pass</title>
   <link rel="stylesheet" href="style.css">
-  <script src="backend-config.js?v=shared-2" defer></script>
-  <script src="app.js?v=shared-2" defer></script>
+  <script src="backend-config.js?v=shared-3" defer></script>
+  <script src="app.js?v=shared-3" defer></script>
 </head>
 <body>
   <header class="site-header"><span class="brand"><span class="brand-icon">G</span> Campus Gate Pass</span><nav><span class="nav-link active">Guard desk</span></nav></header>
   <main class="container narrow">
     <section class="intro"><p class="small-heading">MAIN GATE</p><h1>Guard desk</h1><p>Scan a student's pass, verify their physical college ID, and record entry or exit.</p></section>
-    <div class="demo-note"><strong>Shared backend:</strong> Guard sign-in and movement checks run against the shared database.</div>
+    <div class="info-note"><strong>Shared backend:</strong> Guard sign-in and movement checks run against the shared database.</div>
     <section id="guard-login" class="panel login-panel">
       <h2>Guard sign-in</h2>
       <form id="guard-login-form"><label for="guard-pin">Guard PIN</label><input id="guard-pin" type="password" inputmode="numeric" placeholder="Enter guard PIN" required><button class="button" type="submit">Open guard desk</button></form>
@@ -30,6 +30,6 @@
       <section class="panel history-panel"><div class="history-heading"><div><p class="small-heading">RECENT ACTIVITY</p><h2>Recent scans</h2></div><span class="muted">Shared history</span></div><div id="scan-history"><p class="muted">No scans recorded yet.</p></div></section>
     </section>
   </main>
-  <footer>Campus Gate Pass · Guard station demo</footer>
+  <footer>Campus Gate Pass · Guard station</footer>
 </body>
 </html>

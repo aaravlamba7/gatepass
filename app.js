@@ -41,6 +41,7 @@ function clearMessage(id) {
 
 function showStudentPass(student) {
   document.getElementById("student-login")?.classList.add("hidden");
+  document.getElementById("student-register")?.classList.add("hidden");
   document.getElementById("student-pass")?.classList.remove("hidden");
   document.getElementById("student-name").textContent = student.name;
   document.getElementById("student-roll-display").textContent = student.roll;
@@ -51,6 +52,15 @@ function showStudentPass(student) {
   qrTarget.innerHTML = "";
   if (window.QRCode) new QRCode(qrTarget, { text: guardLink.href, width: 148, height: 148, colorDark: "#1d3551", colorLight: "#ffffff" });
   else message("student-message", "QR library did not load. Check your internet connection and reload.", "error");
+}
+
+function startStudentSession(result) {
+  localStorage.setItem(studentSessionKey, result.sessionToken);
+  clearMessage("student-message");
+  clearMessage("register-message");
+  showStudentPass(result.student);
+  if (studentRefreshTimer) clearInterval(studentRefreshTimer);
+  studentRefreshTimer = setInterval(refreshStudentStatus, 3000);
 }
 
 async function refreshStudentStatus() {
@@ -70,6 +80,7 @@ async function refreshStudentStatus() {
 
 function initStudentPage() {
   const form = document.getElementById("student-login-form");
+  const registerForm = document.getElementById("student-register-form");
   if (!form) return;
   if (!backendReady) message("student-message", "Shared backend setup is needed. Follow BACKEND_SETUP.md before using this portal.", "error");
 
@@ -82,13 +93,43 @@ function initStudentPage() {
         p_roll: document.getElementById("student-roll").value.trim(),
         p_pass_code: document.getElementById("student-code").value.trim()
       });
-      localStorage.setItem(studentSessionKey, result.sessionToken);
-      clearMessage("student-message");
-      showStudentPass(result.student);
-      if (studentRefreshTimer) clearInterval(studentRefreshTimer);
-      studentRefreshTimer = setInterval(refreshStudentStatus, 3000);
+      startStudentSession(result);
     } catch (error) {
       message("student-message", error.message, "error");
+    } finally { button.disabled = false; }
+  });
+
+  document.getElementById("show-register")?.addEventListener("click", () => {
+    document.getElementById("student-login").classList.add("hidden");
+    document.getElementById("student-register").classList.remove("hidden");
+    clearMessage("register-message");
+  });
+
+  document.getElementById("show-login")?.addEventListener("click", () => {
+    document.getElementById("student-register").classList.add("hidden");
+    document.getElementById("student-login").classList.remove("hidden");
+    clearMessage("student-message");
+  });
+
+  registerForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const passCode = document.getElementById("student-code-new").value;
+    const confirmation = document.getElementById("student-code-confirm").value;
+    if (passCode !== confirmation) {
+      message("register-message", "The pass codes do not match. Please enter them again.", "error");
+      return;
+    }
+    const button = registerForm.querySelector("button[type=submit]");
+    button.disabled = true;
+    try {
+      const result = await rpc("student_register", {
+        p_name: document.getElementById("student-name-input").value.trim(),
+        p_roll: document.getElementById("student-roll-new").value.trim(),
+        p_pass_code: passCode
+      });
+      startStudentSession(result);
+    } catch (error) {
+      message("register-message", error.message, "error");
     } finally { button.disabled = false; }
   });
 
@@ -98,8 +139,10 @@ function initStudentPage() {
     localStorage.removeItem(studentSessionKey);
     if (studentRefreshTimer) clearInterval(studentRefreshTimer);
     document.getElementById("student-pass").classList.add("hidden");
+    document.getElementById("student-register")?.classList.add("hidden");
     document.getElementById("student-login").classList.remove("hidden");
     form.reset();
+    registerForm?.reset();
   });
 
   const existingSession = localStorage.getItem(studentSessionKey);
@@ -245,9 +288,6 @@ function initGuardPage() {
     finally { button.disabled = false; }
   });
 
-  document.getElementById("reset-demo").addEventListener("click", () => {
-    message("scan-message", "There is no reset button for shared records. Each entry and exit stays in the audit history.", "info");
-  });
 }
 
 initStudentPage();
