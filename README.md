@@ -1,26 +1,21 @@
-# CampusPass gate-pass prototype
+# Campus Gate Pass — static demo
 
-A small PHP and MySQL project for a college gate. Students have a QR pass; a guard checks the student's physical college ID and records entry or exit.
+This classroom prototype uses HTML, CSS, and a little JavaScript to show sample QR passes and record entry or exit.
 
-## What each part does
+## Files and roles
 
-- **HTML** gives the pages their headings, forms, pass cards, and links.
-- **CSS** controls the colours, spacing, and layout.
-- **PHP** runs on the server. It checks the guard PIN, looks up a scanned QR token, blocks an invalid entry/exit sequence, and saves the scan.
-- **MySQL** stores students, their current IN/OUT status, and the time-stamped gate history.
-- **QRCode.js** draws the QR image in the browser. A USB QR scanner works like a keyboard: it types the scanned token into the guard form.
+- `index.html` contains the page content and forms.
+- `style.css` controls layout, colours, and spacing.
+- `app.js` displays sample QR codes, checks entry/exit order, and saves scan history in this browser.
 
-## Setup
+QRCode.js loads from a CDN, so the QR images require an internet connection. A USB QR scanner types its token into the guard form like a keyboard.
 
-1. Create a MySQL database and import `schema.sql` using phpMyAdmin.
-2. Copy `config.example.php` to `config.php` and fill in the database host, database name, username, password, and a guard PIN.
-3. Upload the folder contents to a PHP web host, keeping `config.php` private and never committing it to GitHub.
-4. Open `index.php`; use **Guard desk** to try a scan. The example PIN in the config template is `2468`.
+Open `index.html` directly or publish these files with GitHub Pages or a static web host. No PHP, database, or build tools are needed.
 
-The seed records are fictional demo students. Do not put real student names, roll numbers, QR tokens, or database passwords in a public repository.
+## Explain it simply
 
-## Important project limitation
+HTML is the page structure, CSS is its appearance, and JavaScript handles clicks and form actions. Browser `localStorage` remembers the sample status on this device only.
 
-A QR code is a bearer pass and can be copied. To reduce proxy use, the guard must compare the person's face and physical college ID with the name and roll number shown after scanning. This prototype records that the guard checked the ID; it cannot independently prove that the check was honest. A production college system would need college-managed accounts, access controls, and an approved identity-check process.
+## Limits
 
-The student page shows both sample passes only to make a classroom demo easy. A real deployment must authenticate each student and display only their own QR pass. The QR-generation script loads QRCode.js from a CDN, so that script needs an internet connection when the page is first displayed.
+This is a demonstration, not a secure attendance system. Scan history does not sync to another device and can be cleared. A copied QR can still be shown by someone else; the guard must check the physical college ID. A real no-proxy system needs secure college accounts and a protected shared server.
