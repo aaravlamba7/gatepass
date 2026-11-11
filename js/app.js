@@ -9,7 +9,7 @@ let studentRefreshTimer = null;
 const backendReady = Boolean(config.supabaseUrl && config.anonKey);
 
 async function rpc(functionName, params = {}) {
-  if (!backendReady) throw new Error("Shared backend is not configured yet. Open backend-config.js and follow BACKEND_SETUP.md.");
+  if (!backendReady) throw new Error("Shared backend is not configured yet. Open js/backend-config.js and follow BACKEND_SETUP.md.");
   const baseUrl = config.supabaseUrl.replace(/\/$/, "");
   const response = await fetch(`${baseUrl}/rest/v1/rpc/${functionName}`, {
     method: "POST",
@@ -46,7 +46,7 @@ function showStudentPass(student) {
   document.getElementById("student-name").textContent = student.name;
   document.getElementById("student-roll-display").textContent = student.roll;
   document.getElementById("student-status").textContent = student.status;
-  const guardLink = new URL("guard.html", window.location.href);
+  const guardLink = new URL("pages/guard.html", window.location.href);
   guardLink.searchParams.set("scan", student.qrToken);
   const qrTarget = document.getElementById("student-qr");
   qrTarget.innerHTML = "";
