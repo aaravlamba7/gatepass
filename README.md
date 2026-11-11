@@ -1,29 +1,36 @@
 # Campus Gate Pass
 
-A student registers once with their name, college roll number, and a pass code they choose. Their account and QR pass are saved in Supabase for later sign-ins. The student page is hosted on GitHub Pages; guard scans and gate status use the shared database.
+Campus Gate Pass has separate student, visitor, guard, and admin pages. Students use a saved QR pass. Visitors request access, wait for admin approval, then receive a time-limited QR pass. Guards record entry and exit.
+
+## Visitor flow
+
+1. A visitor enters their name, contact number, host, purpose, requested duration, and a private access code.
+2. The admin signs in at admin.html and approves or rejects the pending request.
+3. When approved, the visitor page displays a QR code and its expiry time.
+4. The guard scans the visitor QR, checks a photo ID, and records Entry or Exit.
+5. The guard portal lists approved visitors. A visitor still marked inside after expiry is highlighted as overdue, with their contact number and latest GPS location only if they explicitly opted in.
+
+## GPS privacy and limitations
+
+Location sharing is optional and unchecked by default. The visitor must consent on the request form, then press Start location sharing after approval and grant the browser's location permission. The page explains that location is shared with campus security while the pass is active.
+
+The browser must keep the visitor page open for updates; a static web page cannot guarantee background tracking. The guard sees the last update time and approximate accuracy. The visitor can stop sharing, which deletes the stored coordinates. At pass expiry, updates stop but the last shared location remains available to an authorized guard while the visitor is still marked inside. Recording Exit marks the pass completed and clears its coordinates.
 
 ## Files
 
-- `index.html` contains student sign-in and one-time registration.
-- `guard.html` is the separate guard sign-in and scan page.
-- `app.js` connects page actions to the database and refreshes student status.
-- `backend-config.js` contains the public Supabase URL and publishable key.
-- `supabase_setup.sql` creates the tables and database functions. It does not add sample students.
-- `student_registration_migration.sql` updates an existing database with student registration and disables old sample accounts.
-- `BACKEND_SETUP.md` explains setup and account use.
-- `style.css` controls page layout and colours.
+- index.html — student sign-in and registration.
+- visitor.html — visitor request, status, QR pass, and optional GPS sharing.
+- admin.html — PIN-protected visitor request approval.
+- guard.html — student and visitor scanning, activity, and overdue visitor list.
+- app.js, visitor-app.js, visitor-guard.js — browser behavior.
+- style.css — page layout and styling.
+- visitor_pass_migration.sql — adds visitor tables/functions to the existing Supabase project.
+- supabase_setup.sql — fresh database setup, including the visitor schema.
+- backend-config.js — public Supabase URL and publishable/anon key.
+- BACKEND_SETUP.md — database setup, private PIN configuration, and privacy notes.
 
-## Student use
+## Security notes
 
-1. On the first visit, choose **Create a student account**.
-2. Enter your name and college roll number, then choose and confirm a pass code.
-3. Your QR pass opens. On later visits, sign in with the same roll number and pass code.
+Visitor contact and location are personal data. The database functions expose pending requests only to an admin session and approved visitor details only to a guard session. The admin passphrase and guard PIN must be configured privately in Supabase SQL Editor; never commit them to GitHub. The project is a classroom prototype and does not verify a visitor against an official identity or host roster.
 
-Each roll number can register only once. The account stores a protected pass-code hash, not the pass code itself.
-
-## Guard use
-
-Open `guard.html`, sign in, scan the student's QR, check the physical college ID, and record Entry or Exit. The existing guard PIN is `2468`; change it before using this outside a classroom project.
-
-Do not put Supabase secret or service-role keys in browser files. Student names and roll numbers entered through registration are self-reported; this version does not check them against an official college roster.
-
+Do not put a Supabase secret or service-role key in browser files. backend-config.js must contain only the browser-safe publishable/anon key.

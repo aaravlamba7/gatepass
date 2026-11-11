@@ -221,6 +221,7 @@ function initGuardPage() {
   const dashboard = async (pendingScan = "") => {
     document.getElementById("guard-login").classList.add("hidden");
     document.getElementById("guard-dashboard").classList.remove("hidden");
+    document.dispatchEvent(new Event("campus:guard-ready"));
     await refreshHistory();
     if (pendingScan) {
       document.getElementById("qr-token").value = pendingScan;
@@ -259,6 +260,7 @@ function initGuardPage() {
     selectedStudent = null;
     document.getElementById("guard-dashboard").classList.add("hidden");
     document.getElementById("guard-login").classList.remove("hidden");
+    document.dispatchEvent(new Event("campus:guard-logout"));
     form.reset();
   });
 
@@ -289,6 +291,8 @@ function initGuardPage() {
   });
 
 }
+
+window.CampusGatePass = { rpc, message, clearMessage };
 
 initStudentPage();
 initGuardPage();
