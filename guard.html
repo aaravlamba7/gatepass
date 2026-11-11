@@ -31,7 +31,7 @@
       <section class="panel history-panel"><div class="history-heading"><div><p class="small-heading">RECENT ACTIVITY</p><h2>Recent scans</h2></div><span class="muted">Shared history</span></div><div id="scan-history"><p class="muted">No scans recorded yet.</p></div></section>
       <section class="panel visitor-monitor">
         <div class="history-heading"><div><p class="small-heading">VISITOR CHECK</p><h2>Approved visitors</h2></div><button id="visitor-list-refresh" class="text-button" type="button">Refresh</button></div>
-        <p class="muted small-copy">Overdue visitors still marked inside are highlighted. GPS appears only when the visitor opted in.</p>
+        <p class="muted small-copy">Overdue visitors who are still marked inside are highlighted with their contact details.</p>
         <div id="guard-visitor-list" class="visitor-list"><p class="muted">Sign in to view approved visitors.</p></div>
       </section>
       <section class="panel">
@@ -46,7 +46,6 @@
         <p>Reason: <span id="guard-visitor-purpose"></span></p>
         <p>Pass: <strong id="guard-visitor-pass-status"></strong> · Gate: <strong id="guard-visitor-gate-status"></strong></p>
         <p id="guard-visitor-expiry" class="muted"></p>
-        <p id="guard-visitor-location" class="muted">No location shared.</p>
         <form id="visitor-confirm-form">
           <label for="visitor-movement">Select movement</label><select id="visitor-movement" required><option value="">Choose entry or exit</option><option value="ENTRY">Entry — entering campus</option><option value="EXIT">Exit — leaving campus</option></select>
           <label class="check-line"><input id="visitor-id-check" type="checkbox" required> I checked the visitor's photo ID.</label>

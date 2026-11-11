@@ -29,8 +29,6 @@
         <label for="visitor-duration-input">Requested time on campus</label>
         <select id="visitor-duration-input" required><option value="60">1 hour</option><option value="120" selected>2 hours</option><option value="240">4 hours</option><option value="480">8 hours</option></select>
         <label for="visitor-access-code-input">Create a private access code</label><input id="visitor-access-code-input" type="password" minlength="6" maxlength="64" autocomplete="new-password" required>
-        <label class="consent-panel"><input id="visitor-location-consent" type="checkbox"> <span><strong>Optional GPS sharing:</strong> I agree to share my location with campus security while the pass is active. If I am still marked inside after the pass expires, the guard may see my last shared location and contact number for follow-up. I can stop sharing at any time.</span></label>
-        <p class="muted small-copy">Location is only requested after approval and after you press “Start location sharing.” It updates while this page is open; browser GPS is not guaranteed to run in the background. Your last location is cleared when the guard records your exit.</p>
         <button class="button" type="submit">Send request to admin</button>
       </form>
       <div id="visitor-request-message" class="message hidden" role="status"></div>
@@ -56,12 +54,6 @@
       <div id="visitor-qr-panel" class="hidden">
         <div class="qr-frame"><div id="visitor-qr" class="qr-code"></div></div>
         <p class="pass-help">Show this QR and your photo ID to the guard.</p>
-      </div>
-      <div id="visitor-location-panel" class="info-note hidden">
-        <strong>GPS sharing</strong>
-        <p id="visitor-location-state" class="muted">Not started.</p>
-        <button id="visitor-location-start" class="button" type="button">Start location sharing</button>
-        <button id="visitor-location-stop" class="button button-secondary hidden" type="button">Stop and delete shared location</button>
       </div>
       <div id="visitor-pass-message" class="message hidden" role="status"></div>
     </section>

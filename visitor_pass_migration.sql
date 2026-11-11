@@ -21,18 +21,22 @@ create table if not exists public.visitor_passes (
   qr_token text not null unique,
   status text not null default 'PENDING' check (status in ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED')),
   gate_status text not null default 'OUT' check (gate_status in ('IN', 'OUT')),
-  location_consent boolean not null default false,
-  location_lat double precision,
-  location_lng double precision,
-  location_accuracy_m double precision,
-  location_updated_at timestamptz,
   requested_at timestamptz not null default now(),
   approved_at timestamptz,
   expires_at timestamptz,
-  resolved_at timestamptz,
-  constraint visitor_location_lat_range check (location_lat is null or location_lat between -90 and 90),
-  constraint visitor_location_lng_range check (location_lng is null or location_lng between -180 and 180)
+  resolved_at timestamptz
 );
+
+-- Remove location functions from an earlier draft, if it was applied.
+drop function if exists public.visitor_request(text, text, text, text, integer, text, boolean);
+drop function if exists public.visitor_update_location(uuid, double precision, double precision, double precision);
+drop function if exists public.visitor_stop_location(uuid);
+alter table public.visitor_passes
+  drop column if exists location_consent,
+  drop column if exists location_lat,
+  drop column if exists location_lng,
+  drop column if exists location_accuracy_m,
+  drop column if exists location_updated_at;
 
 alter table public.app_sessions
   add column if not exists visitor_pass_id bigint,
@@ -104,7 +108,7 @@ $$;
 
 create or replace function public.visitor_request(
   p_name text, p_phone text, p_host_name text, p_purpose text,
-  p_duration_minutes integer, p_access_code text, p_location_consent boolean
+  p_duration_minutes integer, p_access_code text
 )
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_pass public.visitor_passes%rowtype; v_token uuid;
@@ -129,11 +133,10 @@ begin
   end if;
 
   insert into public.visitor_passes
-    (visitor_name, phone, host_name, purpose, requested_minutes, access_code_hash, qr_token, location_consent)
+    (visitor_name, phone, host_name, purpose, requested_minutes, access_code_hash, qr_token)
   values
     (btrim(p_name), btrim(p_phone), btrim(p_host_name), btrim(p_purpose), p_duration_minutes,
-     extensions.crypt(p_access_code, extensions.gen_salt('bf')), gen_random_uuid()::text,
-     coalesce(p_location_consent, false))
+     extensions.crypt(p_access_code, extensions.gen_salt('bf')), gen_random_uuid()::text)
   returning * into v_pass;
 
   v_token := gen_random_uuid();
@@ -173,47 +176,8 @@ begin
     'id', v_pass.id, 'name', v_pass.visitor_name, 'phone', v_pass.phone, 'host', v_pass.host_name,
     'purpose', v_pass.purpose, 'status', v_pass.status, 'gateStatus', v_pass.gate_status,
     'requestedAt', v_pass.requested_at, 'expiresAt', v_pass.expires_at,
-    'locationConsent', v_pass.location_consent,
     'qrToken', case when v_pass.status = 'APPROVED' then v_pass.qr_token else null end
   ));
-end;
-$$;
-
-create or replace function public.visitor_update_location(
-  p_session_token uuid, p_lat double precision, p_lng double precision, p_accuracy_m double precision
-)
-returns jsonb language plpgsql security definer set search_path = '' as $$
-declare v_pass_id bigint;
-begin
-  select se.visitor_pass_id into v_pass_id from public.app_sessions se
-  where se.token_hash = encode(extensions.digest(p_session_token::text, 'sha256'), 'hex')
-    and se.role = 'visitor' and se.expires_at > now();
-  if not found then return jsonb_build_object('ok', false, 'error', 'Visitor session expired.'); end if;
-  if p_lat is null or p_lat not between -90 and 90 or p_lng is null or p_lng not between -180 and 180
-     or p_accuracy_m is null or p_accuracy_m < 0 or p_accuracy_m > 10000 then
-    return jsonb_build_object('ok', false, 'error', 'The browser returned an invalid location.');
-  end if;
-  update public.visitor_passes
-  set location_lat = p_lat, location_lng = p_lng, location_accuracy_m = p_accuracy_m, location_updated_at = now()
-  where id = v_pass_id and status = 'APPROVED' and location_consent and expires_at > now();
-  if not found then return jsonb_build_object('ok', false, 'error', 'Location sharing is unavailable for this pass.'); end if;
-  return jsonb_build_object('ok', true, 'updatedAt', now());
-end;
-$$;
-
-create or replace function public.visitor_stop_location(p_session_token uuid)
-returns jsonb language plpgsql security definer set search_path = '' as $$
-declare v_pass_id bigint;
-begin
-  select se.visitor_pass_id into v_pass_id from public.app_sessions se
-  where se.token_hash = encode(extensions.digest(p_session_token::text, 'sha256'), 'hex')
-    and se.role = 'visitor' and se.expires_at > now();
-  if not found then return jsonb_build_object('ok', false, 'error', 'Visitor session expired.'); end if;
-  update public.visitor_passes
-  set location_consent = false, location_lat = null, location_lng = null,
-      location_accuracy_m = null, location_updated_at = null
-  where id = v_pass_id;
-  return jsonb_build_object('ok', true);
 end;
 $$;
 
@@ -291,11 +255,7 @@ begin
     'id', q.id, 'name', q.visitor_name, 'phone', q.phone, 'host', q.host_name, 'purpose', q.purpose,
     'gateStatus', q.gate_status,
     'passStatus', case when q.expires_at <= now() then 'OVERDUE' else 'ACTIVE' end,
-    'expiresAt', q.expires_at, 'locationConsent', q.location_consent,
-    'latitude', case when q.location_consent then q.location_lat else null end,
-    'longitude', case when q.location_consent then q.location_lng else null end,
-    'accuracyM', case when q.location_consent then q.location_accuracy_m else null end,
-    'locationUpdatedAt', case when q.location_consent then q.location_updated_at else null end
+    'expiresAt', q.expires_at
   ) order by q.expires_at), '[]'::jsonb)
   into v_visitors
   from public.visitor_passes q
@@ -320,10 +280,6 @@ begin
     'id', v_pass.id, 'name', v_pass.visitor_name, 'phone', v_pass.phone, 'host', v_pass.host_name,
     'purpose', v_pass.purpose, 'gateStatus', v_pass.gate_status, 'expiresAt', v_pass.expires_at,
     'passStatus', case when v_pass.expires_at <= now() then 'OVERDUE' else 'ACTIVE' end,
-    'latitude', case when v_pass.location_consent then v_pass.location_lat else null end,
-    'longitude', case when v_pass.location_consent then v_pass.location_lng else null end,
-    'locationAccuracyM', case when v_pass.location_consent then v_pass.location_accuracy_m else null end,
-    'locationUpdatedAt', case when v_pass.location_consent then v_pass.location_updated_at else null end,
     'qrToken', v_pass.qr_token
   ));
 end;
@@ -352,8 +308,7 @@ begin
   else
     if v_pass.gate_status <> 'IN' then return jsonb_build_object('ok', false, 'error', 'Record Entry before Exit.'); end if;
     update public.visitor_passes
-    set gate_status = 'OUT', status = 'COMPLETED', resolved_at = now(),
-        location_lat = null, location_lng = null, location_accuracy_m = null, location_updated_at = null
+    set gate_status = 'OUT', status = 'COMPLETED', resolved_at = now()
     where id = v_pass.id returning * into v_pass;
   end if;
   insert into public.visitor_gate_events (visitor_pass_id, guard_id, movement)
@@ -364,18 +319,16 @@ begin
 end;
 $$;
 
-revoke all on function public.visitor_request(text, text, text, text, integer, text, boolean),
+revoke all on function public.visitor_request(text, text, text, text, integer, text),
   public.visitor_login(bigint, text), public.visitor_me(uuid),
-  public.visitor_update_location(uuid, double precision, double precision, double precision),
-  public.visitor_stop_location(uuid), public.visitor_admin_login(text),
+  public.visitor_admin_login(text),
   public.admin_pending_visitors(uuid), public.admin_decide_visitor(uuid, bigint, text),
   public.guard_visitor_list(uuid), public.guard_lookup_visitor(uuid, text),
   public.guard_record_visitor_scan(uuid, text, text, boolean)
   from public, anon, authenticated;
-grant execute on function public.visitor_request(text, text, text, text, integer, text, boolean),
+grant execute on function public.visitor_request(text, text, text, text, integer, text),
   public.visitor_login(bigint, text), public.visitor_me(uuid),
-  public.visitor_update_location(uuid, double precision, double precision, double precision),
-  public.visitor_stop_location(uuid), public.visitor_admin_login(text),
+  public.visitor_admin_login(text),
   public.admin_pending_visitors(uuid), public.admin_decide_visitor(uuid, bigint, text),
   public.guard_visitor_list(uuid), public.guard_lookup_visitor(uuid, text),
   public.guard_record_visitor_scan(uuid, text, text, boolean)

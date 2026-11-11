@@ -1,4 +1,4 @@
-/* Guard view for approved visitor passes and opted-in GPS locations. */
+/* Guard view for approved visitor passes. */
 const guardSessionKey = "campusPassGuardSession";
 let selectedVisitor = null;
 let visitorListTimer = null;
@@ -62,15 +62,6 @@ function showGuardVisitor(visitor) {
   document.getElementById("guard-visitor-gate-status").textContent = visitor.gateStatus;
   document.getElementById("guard-visitor-expiry").textContent = visitor.expiresAt ? "Pass ends " + new Date(visitor.expiresAt).toLocaleString() : "";
 
-  const locationText = document.getElementById("guard-visitor-location");
-  if (visitor.latitude !== null && visitor.longitude !== null && visitor.latitude !== undefined && visitor.longitude !== undefined) {
-    const updated = visitor.locationUpdatedAt ? " Last update: " + new Date(visitor.locationUpdatedAt).toLocaleString() + "." : "";
-    const accuracy = visitor.locationAccuracyM ? " Approx. accuracy: " + Math.round(visitor.locationAccuracyM) + " m." : "";
-    locationText.textContent = (visitor.passStatus === "OVERDUE" ? "Last shared location: " : "Shared location: ") +
-      visitor.latitude.toFixed(5) + ", " + visitor.longitude.toFixed(5) + "." + updated + accuracy;
-  } else {
-    locationText.textContent = "No GPS location was shared by this visitor.";
-  }
   document.getElementById("visitor-id-check").checked = false;
   setVisitorMoveOptions(visitor);
 }
@@ -101,15 +92,6 @@ function visitorCard(visitor) {
   const expiry = document.createElement("p");
   expiry.className = "muted small-copy";
   expiry.textContent = "Pass ends " + new Date(visitor.expiresAt).toLocaleString();
-  const location = document.createElement("p");
-  location.className = "muted small-copy";
-  if (visitor.latitude !== null && visitor.longitude !== null && visitor.latitude !== undefined && visitor.longitude !== undefined) {
-    location.textContent = (visitor.passStatus === "OVERDUE" ? "Last shared GPS: " : "GPS: ") +
-      visitor.latitude.toFixed(5) + ", " + visitor.longitude.toFixed(5) +
-      (visitor.locationUpdatedAt ? " · " + new Date(visitor.locationUpdatedAt).toLocaleString() : "");
-  } else {
-    location.textContent = "GPS not shared.";
-  }
   const actions = document.createElement("div");
   actions.className = "visitor-actions";
   const selectButton = document.createElement("button");
@@ -118,7 +100,7 @@ function visitorCard(visitor) {
   selectButton.textContent = "Open pass";
   selectButton.addEventListener("click", function () { lookupVisitor(visitor.qrToken).catch(function (error) { setGuardVisitorMessage(error.message, "error"); }); });
   actions.append(selectButton);
-  card.append(title, contact, details, expiry, location, actions);
+  card.append(title, contact, details, expiry, actions);
   return card;
 }
 

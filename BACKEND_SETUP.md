@@ -14,7 +14,7 @@ For a completely new Supabase project, run supabase_setup.sql once, then run the
 
 ### Private PIN setup
 
-The visitor feature handles contact details and optional GPS. Before using it with real visitors, configure private credentials directly in the Supabase SQL Editor. Replace the quoted placeholder strings below with your own values, then run the statements. Do not put your chosen credentials into this repository or GitHub.
+The visitor feature handles contact details. Before using it with real visitors, configure private credentials directly in the Supabase SQL Editor. Replace the quoted placeholder strings below with your own values, then run the statements. Do not put your chosen credentials into this repository or GitHub.
 
 The guard PIN must be at least 8 characters. The admin passphrase must be at least 12 characters.
 
@@ -41,14 +41,6 @@ This changes the existing demo guard PIN. The previous public classroom PIN 2468
 - The guard verifies a photo ID and records Entry or Exit. Expired passes still marked inside appear as overdue with contact details.
 - The guard view refreshes visitor status approximately every 20 seconds.
 
-## GPS behavior
-
-GPS sharing is optional and unchecked by default. The visitor must opt in on the request form, wait for approval, press Start location sharing, and grant the browser location permission. The browser page must remain open for updates; mobile browsers may suspend location updates in the background.
-
-While the approved pass is active, the latest location is saved to Supabase and visible to an authenticated guard. When the pass expires, the page stops sending updates. If the visitor is still marked inside, the guard sees the last location and its update time. The visitor can press Stop and delete shared location at any time, which clears the stored coordinates. Recording the visitor's Exit also clears coordinates and completes the pass.
-
-Visitors who do not opt in can still request and receive a pass; their GPS is never collected, and the guard view says no GPS was shared.
-
 ## Existing student and guard pages
 
 - Student sign-in and registration remain on index.html.
@@ -56,4 +48,4 @@ Visitors who do not opt in can still request and receive a pass; their GPS is ne
 - The admin portal is admin.html.
 - backend-config.js contains the browser-safe Supabase Project URL and publishable/anon key. Never use a service-role key in browser code.
 
-The database stores pass codes as hashes. Student names/roll numbers and visitor details are self-reported and are not checked against an official college roster. This remains a classroom prototype, not a production identity or emergency-response system.
+The database stores pass codes as hashes. Student names/roll numbers and visitor details are self-reported and are not checked against an official college roster. This remains a classroom prototype, not a production identity verification system.
