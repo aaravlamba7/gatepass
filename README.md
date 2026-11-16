@@ -1,29 +1,17 @@
-# Campus Gate Pass
+# Aarav Lamba — Portfolio
 
-A student registers once with their name, college roll number, and a pass code they choose. Their account and QR pass are saved in Supabase for later sign-ins. The student page is hosted on GitHub Pages; guard scans and gate status use the shared database.
+A two-page, responsive student portfolio built with plain HTML and CSS. The featured project is Campus Gate Pass.
 
 ## Files
 
-- `index.html` contains student sign-in and one-time registration.
-- `guard.html` is the separate guard sign-in and scan page.
-- `app.js` connects page actions to the database and refreshes student status.
-- `backend-config.js` contains the public Supabase URL and publishable key.
-- `supabase_setup.sql` creates the tables and database functions. It does not add sample students.
-- `student_registration_migration.sql` updates an existing database with student registration and disables old sample accounts.
-- `BACKEND_SETUP.md` explains setup and account use.
-- `style.css` controls page layout and colours.
+- `index.html` — portfolio home, about section, project, skills, and contact details.
+- `internship.html` — honest experience and internship page.
+- `styles.css` — shared styling for both pages.
 
-## Student use
+Open `index.html` in a browser to preview it. The site has no build step or external libraries.
 
-1. On the first visit, choose **Create a student account**.
-2. Enter your name and college roll number, then choose and confirm a pass code.
-3. Your QR pass opens. On later visits, sign in with the same roll number and pass code.
+## GitHub Pages
 
-Each roll number can register only once. The account stores a protected pass-code hash, not the pass code itself.
+The course task asks for a `main` branch and an `UpdateV1` branch, with the latest version deployed from `UpdateV1`. In the repository, choose **Settings → Pages**, set **Deploy from a branch**, select **UpdateV1** and **/(root)**, then save. The site link will look like `https://aaravlamba7.github.io/gatepass/`.
 
-## Guard use
-
-Open `guard.html`, sign in, scan the student's QR, check the physical college ID, and record Entry or Exit. The existing guard PIN is `2468`; change it before using this outside a classroom project.
-
-Do not put Supabase secret or service-role keys in browser files. Student names and roll numbers entered through registration are self-reported; this version does not check them against an official college roster.
-
+The portfolio links to the live Campus Gate Pass prototype and its GitHub repository. The app itself is a classroom prototype; student and visitor details are self-reported.
