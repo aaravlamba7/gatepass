@@ -1,17 +1,13 @@
 # Aarav Lamba — Portfolio
 
-A two-page, responsive student portfolio built with plain HTML and CSS. The featured project is Campus Gate Pass.
+A simple student portfolio made with HTML and CSS.
 
 ## Files
 
-- `index.html` — portfolio home, about section, project, skills, and contact details.
-- `internship.html` — honest experience and internship page.
-- `styles.css` — shared styling for both pages.
+- `index.html` — home page and project list.
+- `internship.html` — internship page.
+- `styles.css` — styling used by both pages.
 
-Open `index.html` in a browser to preview it. The site has no build step or external libraries.
+Open `index.html` in a browser to view the site. It has no JavaScript or build step.
 
-## GitHub Pages
-
-The course task asks for a `main` branch and an `UpdateV1` branch, with the latest version deployed from `UpdateV1`. In the repository, choose **Settings → Pages**, set **Deploy from a branch**, select **UpdateV1** and **/(root)**, then save. The site link will look like `https://aaravlamba7.github.io/gatepass/`.
-
-The portfolio links to the live Campus Gate Pass prototype and its GitHub repository. The app itself is a classroom prototype; student and visitor details are self-reported.
+GitHub Pages is configured to publish the `UpdateV1` branch from the repository root.

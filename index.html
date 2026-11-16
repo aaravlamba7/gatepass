@@ -3,90 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Aarav Lamba's student portfolio and web projects.">
   <title>Aarav Lamba | Portfolio</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Aarav Lamba home"><span class="brand-mark">AL</span><span>Aarav Lamba</span></a>
-    <nav aria-label="Main navigation">
+  <header>
+    <a class="name" href="index.html">Aarav Lamba</a>
+    <nav>
       <a href="#about">About</a>
-      <a href="#project">Project</a>
+      <a href="#projects">Projects</a>
       <a href="internship.html">Internship</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero section-wrap">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="status-dot"></span> B.Tech student · South Asian University</p>
-        <h1>Hi, I’m Aarav.<br><span>I’m learning by building.</span></h1>
-        <p class="hero-text">I’m a student interested in making straightforward websites that solve everyday problems. This portfolio shares what I’m learning and the projects I’m working on.</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="#project">See my project <span aria-hidden="true">↓</span></a>
-          <a class="button button-quiet" href="mailto:aaravlamba7@gmail.com">Get in touch</a>
-        </div>
-      </div>
-      <aside class="intro-card" aria-label="Portfolio introduction">
-        <div class="card-topline"><span>STUDENT PORTFOLIO</span><span>2026</span></div>
-        <div class="initials">AL</div>
-        <h2>Aarav Lamba</h2>
-        <p>Learning web development at South Asian University.</p>
-        <div class="tag-row"><span>HTML</span><span>CSS</span><span>JavaScript</span></div>
-      </aside>
+    <section class="intro">
+      <p class="small-title">STUDENT PORTFOLIO</p>
+      <h1>Hi, I’m Aarav Lamba.</h1>
+      <p class="lead">I’m a B.Tech student at South Asian University learning web development.</p>
     </section>
 
-    <section class="section-wrap about-section" id="about">
-      <div class="section-heading"><p class="eyebrow">A LITTLE ABOUT ME</p><h2>Learning one project at a time.</h2></div>
-      <div class="about-grid">
-        <p class="about-lead">I’m currently pursuing a B.Tech at South Asian University. I’m building my web development skills through coursework and small practical projects.</p>
-        <div class="about-note"><h3>What I’m learning</h3><p>Writing page structure with HTML, styling it with CSS, and using a little JavaScript to make pages respond to user actions.</p></div>
-      </div>
+    <section id="about">
+      <h2>About me</h2>
+      <p>I’m learning to make websites with HTML and CSS. This page is a small portfolio of my work.</p>
     </section>
 
-    <section class="section-wrap project-section" id="project">
-      <div class="section-heading section-heading-row"><div><p class="eyebrow">FEATURED PROJECT</p><h2>Campus Gate Pass</h2></div><span class="project-number">01 / 01</span></div>
-      <article class="project-card">
-        <div class="project-visual" aria-label="Campus Gate Pass project overview">
-          <div class="mini-window">
-            <div class="mini-window-bar"><i></i><i></i><i></i><span>Campus Gate Pass</span></div>
-            <div class="mini-content">
-              <div class="mini-label">STUDENT PASS</div>
-              <div class="mini-pass-row"><div><b>Student entry</b><small>Show the pass to the guard</small></div><span class="mini-check">✓</span></div>
-              <div class="mini-qr" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
-              <div class="mini-status"><span></span> Ready to scan</div>
-            </div>
-          </div>
-          <p class="visual-caption">A student and guard workflow for recording campus entry and exit.</p>
-        </div>
-        <div class="project-info">
-          <p class="project-kicker">WEB DEVELOPMENT · COURSE PROJECT</p>
-          <h3>A simpler way to record gate movement</h3>
-          <p>Campus Gate Pass lets a student sign in and show a personal QR pass. A guard scans the pass, checks the student’s college ID, and records entry or exit. The prototype also includes a visitor request and approval flow.</p>
-          <div class="project-details"><div><span>My focus</span><strong>Pages and user flow</strong></div><div><span>Built with</span><strong>HTML · CSS · JavaScript</strong></div></div>
-          <div class="tag-row project-tags"><span>Student pass</span><span>Guard portal</span><span>Visitor requests</span></div>
-          <div class="project-links"><a class="text-link" href="https://qr-sign-in-attendance.infinityfreeapp.com/gatepass/" target="_blank" rel="noopener">Open the live project <span aria-hidden="true">↗</span></a><a class="text-link secondary-link" href="https://github.com/aaravlamba7/gatepass" target="_blank" rel="noopener">View the GitHub repo <span aria-hidden="true">↗</span></a></div>
-          <p class="prototype-note">This is a student project prototype. Student and visitor details are entered by users and are not verified against an official college roster.</p>
-        </div>
+    <section id="projects">
+      <h2>Projects</h2>
+      <article class="project">
+        <h3>Campus Gate Pass</h3>
+        <p>A college gate-pass project where students use a QR pass and guards record entry and exit.</p>
+        <p class="links"><a href="https://qr-sign-in-attendance.infinityfreeapp.com/gatepass/" target="_blank" rel="noopener">View project</a> · <a href="https://github.com/aaravlamba7/gatepass" target="_blank" rel="noopener">GitHub repository</a></p>
       </article>
     </section>
 
-    <section class="section-wrap skills-section">
-      <div class="section-heading"><p class="eyebrow">TOOLS I’M USING</p><h2>My current toolkit</h2></div>
-      <div class="skills-grid">
-        <article class="skill-card"><span class="skill-index">01</span><h3>HTML</h3><p>Structuring pages, forms, links, and content.</p></article>
-        <article class="skill-card"><span class="skill-index">02</span><h3>CSS</h3><p>Creating layouts, colours, spacing, and responsive pages.</p></article>
-        <article class="skill-card"><span class="skill-index">03</span><h3>JavaScript</h3><p>Adding simple interactions and connecting the interface to data.</p></article>
-      </div>
-    </section>
-
-    <section class="contact-section" id="contact">
-      <div class="section-wrap contact-inner"><div><p class="eyebrow">CONTACT</p><h2>Let’s connect.</h2><p>I’m open to learning, collaborating, and working on useful student projects.</p></div><a class="contact-email" href="mailto:aaravlamba7@gmail.com">aaravlamba7@gmail.com <span aria-hidden="true">↗</span></a></div>
+    <section id="contact">
+      <h2>Contact</h2>
+      <p><a href="mailto:aaravlamba7@gmail.com">aaravlamba7@gmail.com</a></p>
     </section>
   </main>
 
-  <footer class="site-footer"><span>© 2026 Aarav Lamba</span><a href="internship.html">Internship page</a><a href="https://github.com/aaravlamba7" target="_blank" rel="noopener">GitHub ↗</a></footer>
+  <footer><span>Aarav Lamba</span><a href="internship.html">Internship page</a></footer>
 </body>
 </html>
