@@ -4,7 +4,7 @@
 insert into public.guards (username, pin_hash)
 values (
   'Main Gate Guard',
-  extensions.crypt('REPLACE_WITH_YOUR_NEW_8_DIGIT_PIN', extensions.gen_salt('bf'))
+  extensions.crypt('12345678', extensions.gen_salt('bf'))
 )
 on conflict (username) do update
 set pin_hash = excluded.pin_hash, active = true;
