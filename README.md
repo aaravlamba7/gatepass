@@ -18,6 +18,7 @@ Campus Gate Pass has separate student, visitor, guard, and admin pages. Students
 - `js/` — browser code and the public Supabase URL/key configuration.
 - `database/` — setup and migration SQL files.
 - `BACKEND_SETUP.md` — database setup and private PIN instructions.
+- `database/reset_guard_pin.sql` — a reset script with a placeholder for a new private guard PIN.
 
 The project follows the required layout: `index.html`, `pages/`, `css/`, and `js/`.
 
@@ -26,3 +27,7 @@ The project follows the required layout: `index.html`, `pages/`, `css/`, and `js
 Visitor contact details are private. The database functions expose pending requests only to an admin session and approved visitor details only to a guard session. The admin passphrase and guard PIN must be configured privately in Supabase SQL Editor; never commit them to GitHub. The project is a classroom prototype and does not verify a visitor against an official identity or host roster.
 
 Do not put a Supabase secret or service-role key in browser files. `js/backend-config.js` must contain only the browser-safe publishable/anon key.
+
+## Forgotten guard PIN
+
+The database stores the guard PIN as a hash, so it cannot be displayed or recovered. To replace it, open the Supabase SQL Editor, replace the placeholder in `database/reset_guard_pin.sql` with a new 8-digit PIN, and run the query. Do not commit a real PIN to GitHub.
