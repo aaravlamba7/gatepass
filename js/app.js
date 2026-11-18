@@ -211,7 +211,7 @@ async function startQrCamera(mode) {
   if (qrCameraStarting) return;
   const feedbackId = mode === "visitor" ? "visitor-scan-message" : "scan-message";
   if (!window.Html5Qrcode) {
-    message(feedbackId, "Camera scanner did not load. Check your internet connection and reload the page.", "error");
+    message(feedbackId, "Camera scanner file did not load. Reload the page. If this is the hosted copy, upload the updated project folder.", "error");
     return;
   }
   if (!navigator.mediaDevices?.getUserMedia) {

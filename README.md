@@ -23,7 +23,7 @@ Campus Gate Pass has separate student, visitor, guard, and admin pages. Students
 
 The project follows the required layout: `index.html`, `pages/`, `css/`, and `js/`.
 
-The guard camera uses the `html5-qrcode` browser library loaded from jsDelivr. The camera starts only after the guard taps a scan button; the host must use HTTPS and the guard must allow camera access. Student scans suggest Entry when the status is OUT and Exit when the status is IN. The guard checks the physical college ID and confirms the movement before it is saved.
+The guard camera uses the bundled `html5-qrcode` 2.3.8 library in `js/html5-qrcode.min.js`, so scanning does not depend on a third-party CDN loading. Its Apache 2.0 license is included as `js/HTML5_QR_CODE_LICENSE.txt`. The camera starts only after the guard taps a scan button; the host must use HTTPS and the guard must allow camera access. Student scans suggest Entry when the status is OUT and Exit when the status is IN. The guard checks the physical college ID and confirms the movement before it is saved.
 
 ## Security notes
 
