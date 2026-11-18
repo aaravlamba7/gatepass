@@ -5,6 +5,11 @@ const studentSessionKey = "campusPassStudentSession";
 const guardSessionKey = "campusPassGuardSession";
 let selectedStudent = null;
 let studentRefreshTimer = null;
+let qrCamera = null;
+let qrCameraRunning = false;
+let qrCameraStarting = false;
+let qrCameraMode = "student";
+let qrScanHandled = false;
 
 const backendReady = Boolean(config.supabaseUrl && config.anonKey);
 
@@ -177,10 +182,103 @@ async function lookupStudent(rawValue) {
   document.getElementById("result-name").textContent = selectedStudent.name;
   document.getElementById("result-roll").textContent = selectedStudent.roll;
   document.getElementById("result-status").textContent = selectedStudent.status;
-  document.getElementById("movement").value = "";
+  const movement = selectedStudent.status === "IN" ? "EXIT" : "ENTRY";
+  document.getElementById("movement").value = movement;
+  document.getElementById("next-movement").textContent = movement === "ENTRY" ? "Entry — mark as IN" : "Exit — mark as OUT";
+  document.getElementById("record-student-movement").textContent = `Record ${movement === "ENTRY" ? "entry" : "exit"}`;
   document.getElementById("id-check").checked = false;
   document.getElementById("student-result").classList.remove("hidden");
   clearMessage("scan-message");
+}
+
+async function stopQrCamera() {
+  const scanner = qrCamera;
+  qrCamera = null;
+  const wasRunning = qrCameraRunning;
+  qrCameraRunning = false;
+
+  if (scanner) {
+    if (wasRunning) {
+      try { await scanner.stop(); } catch (_) {}
+    }
+    try { scanner.clear(); } catch (_) {}
+  }
+
+  document.getElementById("qr-camera-panel")?.classList.add("hidden");
+}
+
+async function startQrCamera(mode) {
+  if (qrCameraStarting) return;
+  const feedbackId = mode === "visitor" ? "visitor-scan-message" : "scan-message";
+  if (!window.Html5Qrcode) {
+    message(feedbackId, "Camera scanner did not load. Check your internet connection and reload the page.", "error");
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    message(feedbackId, "Camera access needs HTTPS. Open the hosted HTTPS site and allow camera permission.", "error");
+    return;
+  }
+
+  qrCameraStarting = true;
+  await stopQrCamera();
+  qrCameraMode = mode;
+  qrScanHandled = false;
+  const panel = document.getElementById("qr-camera-panel");
+  panel.classList.remove("hidden");
+  clearMessage(feedbackId);
+  message("qr-camera-message", "Starting camera. Allow camera access if your browser asks.");
+
+  const formats = window.Html5QrcodeSupportedFormats
+    ? { formatsToSupport: [window.Html5QrcodeSupportedFormats.QR_CODE] }
+    : {};
+  const config = { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1 };
+  let startError = null;
+
+  const onQrRead = async (decodedText) => {
+    if (qrScanHandled) return;
+    qrScanHandled = true;
+    const scannedMode = qrCameraMode;
+    message("qr-camera-message", "QR found. Opening the pass…", "success");
+    await stopQrCamera();
+
+    if (scannedMode === "student") {
+      document.getElementById("qr-token").value = decodedText;
+      try { await lookupStudent(decodedText); }
+      catch (error) {
+        document.getElementById("student-result").classList.add("hidden");
+        message("scan-message", error.message, "error");
+      }
+    } else {
+      document.getElementById("visitor-qr-token").value = decodedText;
+      document.dispatchEvent(new CustomEvent("campus:visitor-qr-scanned", { detail: { text: decodedText } }));
+    }
+  };
+
+  try {
+    for (const facingMode of ["environment", "user"]) {
+      const scanner = new window.Html5Qrcode("qr-reader", formats);
+      qrCamera = scanner;
+      try {
+        await scanner.start({ facingMode }, config, onQrRead, () => {});
+        qrCameraRunning = true;
+        message("qr-camera-message", "Camera is on. Point it at the QR code.", "success");
+        return;
+      } catch (error) {
+        startError = error;
+        try { scanner.clear(); } catch (_) {}
+        if (qrCamera === scanner) qrCamera = null;
+      }
+    }
+
+    panel.classList.add("hidden");
+    const detail = startError?.message || String(startError || "Camera unavailable.");
+    const hint = /permission|denied|notallowed/i.test(detail)
+      ? "Allow camera access in your browser, then try again."
+      : `Could not open the camera. Check that a camera is connected and not being used by another app. (${detail})`;
+    message(feedbackId, hint, "error");
+  } finally {
+    qrCameraStarting = false;
+  }
 }
 
 async function refreshHistory() {
@@ -217,6 +315,9 @@ function initGuardPage() {
   const form = document.getElementById("guard-login-form");
   if (!form) return;
   if (!backendReady) message("guard-message", "Shared backend setup is needed. Follow BACKEND_SETUP.md before using this portal.", "error");
+  document.getElementById("start-student-camera").addEventListener("click", () => startQrCamera("student"));
+  document.getElementById("stop-qr-camera").addEventListener("click", stopQrCamera);
+  document.addEventListener("campus:guard-logout", stopQrCamera);
 
   const dashboard = async (pendingScan = "") => {
     document.getElementById("guard-login").classList.add("hidden");
@@ -285,6 +386,8 @@ function initGuardPage() {
       selectedStudent.status = result.student.status;
       document.getElementById("result-status").textContent = result.student.status;
       message("scan-message", `${result.student.name}: ${result.movement} recorded. Status is now ${result.student.status}.`, "success");
+      document.getElementById("student-result").classList.add("hidden");
+      selectedStudent = null;
       await refreshHistory();
     } catch (error) { message("scan-message", error.message, "error"); }
     finally { button.disabled = false; }
@@ -292,7 +395,7 @@ function initGuardPage() {
 
 }
 
-window.CampusGatePass = { rpc, message, clearMessage };
+window.CampusGatePass = { rpc, message, clearMessage, startQrCamera };
 
 initStudentPage();
 initGuardPage();

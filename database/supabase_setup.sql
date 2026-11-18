@@ -109,7 +109,8 @@ create or replace function public.guard_login(p_pin text)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_guard public.guards%rowtype; v_token uuid;
 begin
-  select * into v_guard from public.guards where active order by id limit 1;
+  select * into v_guard from public.guards
+  where username = 'Main Gate Guard' and active;
   if not found then return jsonb_build_object('ok', false, 'error', 'Guard PIN is incorrect.'); end if;
   if extensions.crypt(coalesce(p_pin, ''), v_guard.pin_hash) <> v_guard.pin_hash then
     return jsonb_build_object('ok', false, 'error', 'Guard PIN is incorrect.');
@@ -292,7 +293,8 @@ begin
   if length(coalesce(p_pin, '')) < 8 then
     return jsonb_build_object('ok', false, 'error', 'Guard PIN is incorrect.');
   end if;
-  select * into v_guard from public.guards where active order by id limit 1;
+  select * into v_guard from public.guards
+  where username = 'Main Gate Guard' and active;
   if not found or extensions.crypt(coalesce(p_pin, ''), v_guard.pin_hash) <> v_guard.pin_hash then
     return jsonb_build_object('ok', false, 'error', 'Guard PIN is incorrect.');
   end if;

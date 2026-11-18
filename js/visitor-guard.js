@@ -1,5 +1,5 @@
 /* Guard view for approved visitor passes. */
-const guardSessionKey = "campusPassGuardSession";
+const visitorGuardSessionKey = "campusPassGuardSession";
 let selectedVisitor = null;
 let visitorListTimer = null;
 let pendingVisitorQr = new URLSearchParams(window.location.search).get("visitor") || "";
@@ -69,7 +69,7 @@ function showGuardVisitor(visitor) {
 async function lookupVisitor(raw) {
   const token = visitorQrTokenFrom(raw);
   const result = await guardVisitorRpc("guard_lookup_visitor", {
-    p_session_token: localStorage.getItem(guardSessionKey),
+    p_session_token: localStorage.getItem(visitorGuardSessionKey),
     p_qr_token: token
   });
   showGuardVisitor(result.visitor);
@@ -107,7 +107,7 @@ function visitorCard(visitor) {
 async function refreshGuardVisitors() {
   const target = document.getElementById("guard-visitor-list");
   if (!target) return;
-  const result = await guardVisitorRpc("guard_visitor_list", { p_session_token: localStorage.getItem(guardSessionKey) });
+  const result = await guardVisitorRpc("guard_visitor_list", { p_session_token: localStorage.getItem(visitorGuardSessionKey) });
   target.replaceChildren();
   if (!result.visitors.length) {
     const empty = document.createElement("p");
@@ -140,6 +140,18 @@ async function onGuardReady() {
 function initGuardVisitors() {
   const form = document.getElementById("visitor-scan-form");
   if (!form) return;
+  document.getElementById("start-visitor-camera").addEventListener("click", function () {
+    window.CampusGatePass.startQrCamera("visitor");
+  });
+  document.addEventListener("campus:visitor-qr-scanned", function (event) {
+    const rawValue = event.detail && event.detail.text;
+    if (!rawValue) return;
+    document.getElementById("visitor-qr-token").value = rawValue;
+    lookupVisitor(rawValue).catch(function (error) {
+      document.getElementById("guard-visitor-result").classList.add("hidden");
+      setGuardVisitorMessage(error.message, "error");
+    });
+  });
   document.addEventListener("campus:guard-ready", onGuardReady);
   document.addEventListener("campus:guard-logout", function () {
     if (visitorListTimer) clearInterval(visitorListTimer);
@@ -165,7 +177,7 @@ function initGuardVisitors() {
     button.disabled = true;
     try {
       const result = await guardVisitorRpc("guard_record_visitor_scan", {
-        p_session_token: localStorage.getItem(guardSessionKey),
+        p_session_token: localStorage.getItem(visitorGuardSessionKey),
         p_qr_token: selectedVisitor.qrToken,
         p_movement: document.getElementById("visitor-movement").value,
         p_id_checked: document.getElementById("visitor-id-check").checked
@@ -180,7 +192,7 @@ function initGuardVisitors() {
       button.disabled = false;
     }
   });
-  if (localStorage.getItem(guardSessionKey)) onGuardReady();
+  if (localStorage.getItem(visitorGuardSessionKey)) onGuardReady();
 }
 
 initGuardVisitors();
